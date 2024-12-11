@@ -14,7 +14,8 @@ defmodule Day2 do
   end
 
   def isSafeNew(levels) do
-    isSafeDecreasingNew(levels) or isSafeIncreasingNew(levels)
+    [_head | tail] = levels
+    isSafeDecreasingNew(levels) or isSafeIncreasingNew(levels) or isSafe(tail)
   end
 
   def isSafeDecreasingNew(levels) do
