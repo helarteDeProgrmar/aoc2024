@@ -1,60 +1,47 @@
 defmodule Day11 do
-  def main() do
+
+  def main(amount) do
     parse_input()
-    |> make_blink(25,0)
-    |> IO.inspect()
-    |> length()
+    |> Enum.reduce(0, fn x, acc ->
+      IO.inspect(x)
+      amount_of_children(x, amount,0) + acc
+    end)
   end
 
-  def main2() do
-    parse_input()
-    |> make_blink(75,0)
-    |> IO.inspect()
-    |> length()
-  end
-
-  def make_blink(list, number, aux) do
-    if aux >= number do
-      list
+  def amount_of_children(number, generations, current_generation) do
+    if current_generation >= generations do
+      1
     else
-      make_blink(list)
-      |> make_blink(number, aux+1)
+      if number == 0 do
+        amount_of_children(1, generations, current_generation+1)
+      else
+        digits = digits_number(number, 0)
+        cond do
+          rem(digits,2) == 0 ->
+            [a,b] = splice_number(number, digits)
+            amount_of_children(a, generations, current_generation+1) + amount_of_children(b, generations, current_generation+1)
+          true -> amount_of_children(number*2024, generations, current_generation+1)
+        end
+      end
     end
   end
 
-  def make_blink(list) do
-    make_blink([], list)
+  def splice_number(number, digits) do
+    head = div(number, pow(digits/2))
+    next = number - head*pow(digits/2)
+    [head, next]
   end
 
-  def make_blink(list_result, list_to_process) do
-    if length(list_to_process) == 0 do
-      list_result
+  def pow(n) do
+    if n == 0, do: 1, else: 10*pow(n-1)
+  end
+
+  def digits_number(number, count) do
+    if number < 10 do
+      count + 1
     else
-      [head | tail] = list_to_process
-      make_blink(list_result ++ process(head) , tail)
+      digits_number(div(number,10), count+1)
     end
-  end
-
-  def process(number) do
-    cond do
-      number == 0 -> [1]
-      has_even_digits(number) -> splice_number(number)
-      true -> [number*2024]
-    end
-  end
-
-  def has_even_digits(number) do
-    Integer.to_string(number)
-    |> String.length()
-    |> rem(2)
-    |> Kernel.==(0)
-  end
-
-  def splice_number(number) do
-    str = Integer.to_string(number)
-    mid = div(String.length(str), 2)
-    [String.slice(str, 0, mid), String.slice(str, mid, mid)]
-    |> Enum.map(&String.to_integer/1)
   end
 
   def parse_input() do
