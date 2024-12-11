@@ -2,9 +2,22 @@ defmodule Day11 do
 
   def main(amount) do
     parse_input()
-    |> Enum.reduce(0, fn x, acc ->
+    |> Enum.reduce(%{cache: %{}, result: 0}, fn x, acc ->
       IO.inspect(x)
       amount_of_children(x, amount,0) + acc
+
+      if Map.has_key?(acc.cache, number) do
+        # Use cached result
+        %{acc | result: acc.cache[number] + acc.result}
+      else
+        # Compute the result and cache it
+        square = number * number
+        new_cache = Map.put(acc.cache, number, square)
+        %{acc | cache: new_cache, result: [square | acc.result]}
+      end
+
+
+
     end)
   end
 
