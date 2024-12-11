@@ -1,40 +1,39 @@
 defmodule Day11 do
 
   def main(amount) do
-    parse_input()
-    |> Enum.reduce(%{cache: %{}, result: 0}, fn x, acc ->
-      IO.inspect(x)
-      amount_of_children(x, amount,0) + acc
-
-      if Map.has_key?(acc.cache, number) do
-        # Use cached result
-        %{acc | result: acc.cache[number] + acc.result}
-      else
-        # Compute the result and cache it
-        square = number * number
-        new_cache = Map.put(acc.cache, number, square)
-        %{acc | cache: new_cache, result: [square | acc.result]}
-      end
-
-
-
+    result = parse_input()
+    |> Enum.reduce(%{cache: %{}, result: 0}, fn number, acc ->
+      IO.inspect(number)
+      {result, new_cache} = amount_of_children(number, amount, 0, acc.cache)
+      %{cache: new_cache, result: acc.result + result}
     end)
+
+    result.result
   end
 
-  def amount_of_children(number, generations, current_generation) do
+  def amount_of_children(number, generations, current_generation, cache) do
     if current_generation >= generations do
-      1
+      {1, cache}
     else
-      if number == 0 do
-        amount_of_children(1, generations, current_generation+1)
+      if Map.has_key?(cache, {number, generations - current_generation}) do
+        {cache[{number, generations - current_generation}], cache}
       else
-        digits = digits_number(number, 0)
-        cond do
-          rem(digits,2) == 0 ->
-            [a,b] = splice_number(number, digits)
-            amount_of_children(a, generations, current_generation+1) + amount_of_children(b, generations, current_generation+1)
-          true -> amount_of_children(number*2024, generations, current_generation+1)
+        {result, new_cache} = if number == 0 do
+          amount_of_children(1, generations, current_generation+1, cache)
+        else
+          digits = digits_number(number, 0)
+          cond do
+            rem(digits,2) == 0 ->
+              [a,b] = splice_number(number, digits)
+              {a_amount, a_cache} = amount_of_children(a, generations, current_generation+1, cache)
+              {b_amount, b_cache} = amount_of_children(b, generations, current_generation+1, a_cache)
+              {a_amount + b_amount, b_cache}
+            true ->
+              amount_of_children(number*2024, generations, current_generation+1, cache)
+          end
         end
+        new_cache = Map.put(new_cache, {number, generations-current_generation}, result)
+        {result, new_cache}
       end
     end
   end
