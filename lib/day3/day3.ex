@@ -4,12 +4,9 @@ defmodule Day3 do
     |> process()
   end
 
-  def main2() do
-    regex = ~r/don't\(\).*?do\(\)/
-    regex2 = ~r/don't\(\).*/
-    text = File.read!("lib/day3/input2")
-    text = Regex.replace(regex, text,"")
-    Regex.replace(regex2, text, "")
+  def main3 do
+    File.read!("lib/day3/input")
+    |> clean_input("")
     |> process()
   end
 
@@ -20,5 +17,22 @@ defmodule Day3 do
     |> Enum.map(fn [[a],[b]] -> String.to_integer(a) * String.to_integer(b) end)
     |> IO.inspect()
     |> Enum.reduce(0, fn acc, x -> acc + x end)
+  end
+  def split_with_word(text, cut) do
+    case String.split(text, cut, parts: 2) do
+      [before, word_after] -> {String.trim(before), String.trim(word_after)}
+      [before] -> {String.trim(before), ""}
+      _ -> {"", ""}
+    end
+  end
+
+  def clean_input(input, input_aux) do
+    {before, afterr} = split_with_word(input, "don't()")
+    {_, new_afterr } = split_with_word(afterr, "do()")
+
+    cond do
+      new_afterr == "" -> input_aux <> before
+      true -> clean_input(new_afterr, input_aux <> before)
+    end
   end
 end
