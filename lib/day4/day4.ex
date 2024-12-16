@@ -19,11 +19,32 @@ defmodule Day4 do
 
   def make_all_posibleLines(input) do
     horizontal = String.split(input, "\n")
-    [top | tail] = Enum.map(horizontal, fn string -> String.split(string, "") end)
+    lists = Enum.map(horizontal, fn string -> String.split(string, "") end)
+    [top | tail] = lists
 
     vertical = Enum.reduce(tail, top , fn row, acc -> merge_lists(acc,row) end)
 
-    vertical ++ horizontal
+    diagonal1 = Enum.with_index(lists)
+    |> Enum.map( fn {list, index} ->
+      n = length(lists)
+      zeros_before = List.duplicate("", index)
+      zeros_after = List.duplicate("", n - index - 1)
+      zeros_before ++ list ++ zeros_after
+    end)
+    [top | tail] = diagonal1
+    diagonal1 = Enum.reduce(tail, top , fn row, acc -> merge_lists(acc,row) end)
+
+    diagonal2 = Enum.with_index(lists)
+    |> Enum.map( fn {list, index} ->
+      n = length(lists)
+      zeros_before = List.duplicate("", n - index - 1)
+      zeros_after = List.duplicate("", index)
+      zeros_before ++ list ++ zeros_after
+    end)
+    [top | tail] = diagonal2
+    diagonal2 = Enum.reduce(tail, top , fn row, acc -> merge_lists(acc,row) end)
+
+    vertical ++ horizontal ++ diagonal1 ++ diagonal2
   end
 
   def merge_lists(list1, list2) do
